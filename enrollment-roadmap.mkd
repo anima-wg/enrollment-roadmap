@@ -1,0 +1,94 @@
+---
+title: Device Enrollment in IETF protocols -- a roadmap
+abbrev: device enrollment
+docname: draft-richardson-enrollment-roadmap-00
+
+# stand_alone: true
+
+ipr: trust200902
+area: Internet
+wg: 6tisch Working Group
+kw: Internet-Draft
+cat: info
+
+coding: us-ascii
+pi:    # can use array (if all yes) or hash here
+  toc: yes
+  sortrefs:   # defaults to yes
+  symrefs: yes
+
+author:
+      -
+        ins: M. Richardson
+        name: Michael Richardson
+        org: Sandelman Software Works
+        email: mcr+ietf@sandelman.ca
+
+normative:
+  RFC2119:
+  RFC7049:
+  RFC7250:
+  RFC5652:
+  RFC8152:
+  I-D.ietf-anima-voucher:
+  I-D.ietf-anima-bootstrapping-keyinfra:
+  ieee802-1AR:
+    target: "http://standards.ieee.org/findstds/standard/802.1AR-2009.html"
+    title: "IEEE 802.1AR Secure Device Identifier"
+    author:
+      ins: "IEEE Standard"
+    date: 2009
+
+informative:
+  pledge:
+    title: "Dictionary.com Unabridged"
+    target: "http://dictionary.reference.com/browse/pledge"
+    author:
+      -
+        name: Dictionary.com
+    date: 2015
+
+  duckling:
+    title: "The resurrecting duckling: security issues for ad-hoc wireless networks"
+    target: "https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf"
+    author:
+      -
+        ins: F. Stajano
+        name: Frank Stajano
+      -
+        ins: R. Anderson
+        name: Ross Anderson
+    date: 1999
+
+
+--- abstract
+
+This document provides an overview of enrollment or imprinting mechanisms
+in current IETF protocols.
+
+--- middle
+
+# Introduction
+
+There are numerous mechanisms being proposed to solve the problem
+of securely introducing a new devices into an existing managed network.
+
+This document provides an overview of the different mechanisms showing what
+technologies are common.
+
+# Security Considerations
+
+This document includes a tradeoff of the security attributes of the different
+protocols, and so the entire document contains security advice.
+
+# IANA Considerations
+
+This document does not define any new protocols, and therefore does not
+have any IANA Considerations.
+
+# Acknowledgements
+
+TBD
+
+--- back
+
