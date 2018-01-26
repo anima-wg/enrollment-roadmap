@@ -1,4 +1,4 @@
-DRAFT:=constrained-voucher
+DRAFT:=enrollment-roadmap
 VERSION:=$(shell ./getver ${DRAFT}.mkd )
 YANGDATE=$(shell date +%Y-%m-%d)
 

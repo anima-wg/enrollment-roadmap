@@ -74,7 +74,15 @@ There are numerous mechanisms being proposed to solve the problem
 of securely introducing a new devices into an existing managed network.
 
 This document provides an overview of the different mechanisms showing what
-technologies are common.
+technologies are common.  The document starts with a diagram showing the
+various components and how they go together to form five enrollment
+scenarios.
+
+# Map of Enrollment solution
+
+<figure>
+INSERT_TEXT_FROM_FILE component-diagram.txt END
+</figure>
 
 # Security Considerations
 
