@@ -10,6 +10,16 @@
 <!ENTITY RFC8152 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8152.xml">
 <!ENTITY I-D.ietf-anima-voucher SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-anima-voucher.xml">
 <!ENTITY I-D.ietf-anima-bootstrapping-keyinfra SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-anima-bootstrapping-keyinfra.xml">
+<!ENTITY I-D.richardson-anima-ace-constrained-voucher SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.richardson-anima-ace-constrained-voucher.xml">
+<!ENTITY RFC6347 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6347.xml">
+<!ENTITY RFC7030 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7030.xml">
+<!ENTITY I-D.ietf-core-object-security SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-core-object-security.xml">
+<!ENTITY I-D.selander-ace-cose-ecdhe SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.selander-ace-cose-ecdhe.xml">
+<!ENTITY I-D.vanderstok-ace-coap-est SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.vanderstok-ace-coap-est.xml">
+<!ENTITY I-D.ietf-netconf-zerotouch SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-netconf-zerotouch.xml">
+<!ENTITY I-D.ietf-6tisch-minimal-security SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-6tisch-minimal-security.xml">
+<!ENTITY I-D.ietf-6tisch-dtsecurity-zerotouch-join SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-6tisch-dtsecurity-zerotouch-join.xml">
+<!ENTITY I-D.richardson-anima-state-for-joinrouter SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.richardson-anima-state-for-joinrouter.xml">
 ]>
 
 <?rfc toc="yes"?>
@@ -28,7 +38,7 @@
       </address>
     </author>
 
-    <date year="2018" month="January" day="25"/>
+    <date year="2018" month="January" day="26"/>
 
     <area>Internet</area>
     <workgroup>6tisch Working Group</workgroup>
@@ -61,6 +71,58 @@ various components and how they go together to form five enrollment
 scenarios.</t>
 
 </section>
+<section anchor="components-of-enrollment-solutions" title="Components of enrollment solutions">
+
+<t>This diagram is taken from <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>, which
+is where this work started.</t>
+
+<t><figure>
+<artwork><![CDATA[
+                                           +------------------------+
+   +--------------Drop Ship--------------->| Vendor Service         |
+   |                                       +------------------------+
+   |                                       | M anufacturer|         |
+   |                                       | A uthorized  |Ownership|
+   |                                       | S igning     |Tracker  |
+   |                                       | A uthority   |         |
+   |                                       +--------------+---------+
+   |                                                      ^
+   |                                                      |  BRSKI-
+   V                                                      |   MASA
++-------+     ............................................|...
+|       |     .                                           |  .
+|       |     .  +------------+       +-----------+       |  .
+|       |     .  |            |       |           |       |  .
+|Pledge |     .  |   Circuit  |       | Domain    <-------+  .
+|       |     .  |   Proxy    |       | Registrar |          .
+|       <-------->............<-------> (PKI RA)  |          .
+|       |        |        BRSKI-EST   |           |          .
+|       |     .  |            |       +-----+-----+          .
+|IDevID |     .  +------------+             | EST RFC7030    .
+|       |     .           +-----------------+----------+     .
+|       |     .           | Key Infrastructure         |     .
+|       |     .           | (e.g. PKI Certificate      |     .
++-------+     .           |       Authority)           |     .
+              .           +----------------------------+     .
+              .                                              .
+              ................................................
+                            "Domain" components
+]]></artwork>
+</figure></t>
+
+<t>Five major components are described:</t>
+
+<t><list style="numbers">
+  <t>pledge: The node that is attempting to enroll.</t>
+  <t>proxy: A node that is within one layer-2 hop of the pledge that is helping.</t>
+  <t>domain registrar: the Join Registrar/Coordinator (JRC) that will determine
+eligibility of the pledge.</t>
+  <t>MASA: the representative of the manufacturer that has a pre-established
+trust relationship with the pledge.</t>
+  <t>the domain PKI (if any)</t>
+</list></t>
+
+</section>
 <section anchor="map-of-enrollment-solution" title="Map of Enrollment solution">
 
 <t><figure>
@@ -71,51 +133,217 @@ scenarios.</t>
 
                                               .-------------------.
                                               .   generic (YANG)  .
-                                       .------. voucher semantics .-------.
-                                       |      '-------------------'       |
-                                       |                                  |
-                                       |                                  |
-         6tisch             6tisch     |  Transition to                   |
-         minimal             zero      |   Constrained                    |
-         security           touch      |    Bootstrap         BRSKI       |    Netconf
-    .---------------.  .--------------.| .-------------.  .------------.  |.-------------.
-    |               |  |              |v |             |  |            |  v|             |
-    |               |  |    ***********************    |  |  **************************  |
-    |               |  |    * constrained voucher *    |  |  *  JSON format voucher   *  |
-    |               |  |    * (CBOR)              *    |  |  *                        *  |
-    |               |  |    ***********************    |  |  **************************  |
-    |               |  |************* |  |   **************************************      |
-    |               |  |* COSE-8152 * |  |   * standard signature (CMS - RFC5652) *      |
-    |               |  |************* |  |   **************************************      |
-    |               |  *********  *********************|  |  ************************    |
-    |               |  * EDHOC *  *     EST-COAPS     *|  |  *      EST-HTTPS       *    |
-    |               |  *********  *   w/DTLS security *|  |  *     TLS security     *    |
-    |  ************************   *********************|  |  ************************    |
-    |  * constrained object   *       |  |             |  |            |   |             |
-    |  * security (OSCORE)    *       |  |             |  |************|   |*************|
-    |  ************************       |  |             |  |* circuit  *|   |* call-home *|
-    |  *************************************************  |*  proxy   *|   |*  ssh/tls  *|
-    |  * CoAP proxy,stateless  ** DTLS proxy,stateless *  |* stateful *|   |*  .usbkey  *|
-    |  *************************************************  |************|   |*************|
-    |               |  |   *****************************************   |   |             |
-    |               |  |   *     IPIP proxy,stateless              *   |   |             |
-    |               |  |   *****************************************   |   |             |
-    '---------------'  '--------------'  '-------------'  '------------'   '-------------'
-                               ^                ^                ^                ^
-                               |               /                 |                |
-                               |              '                  |                |
-                               |              |                  |                |
-                               |              |                  |                |
-                               |              | .--------------. |                |
-                               |              | . manufacturer . |                |
-                               |              | . authorized   . |                |
-                               '--------------|-. signing      .------------------'
-                                                . authority    .
-                                                . (MASA)       .
-                                                '--------------'
+                        .---------------------. voucher semantics .
+                        |                     '-------------------'
+                        |                            .---
+                        |                            |
+  6tisch      6tisch    |Transition to               |
+  minimal      zero     | Constrained                |
+  security    touch     |  Bootstrap      BRSKI      | Netconf
+.----------..-----------|.-----------..------------. |-------------.
+|          ||           v|           ||            | v             |
+|          ||*********************** || ************************** |
+|          ||* constrained voucher * || *  JSON format voucher   * |
+|          ||* (CBOR)              * || *                        * |
+|          ||*********************** || ************************** |
+|          ||           ||           ||            | |             |
+|          |*************|  ************************************** |
+|          |* COSE-8152 *|  * standard signature (CMS - RFC5652) * |
+|          |*************|  ************************************** |
+|          ||           ||           ||            | |             |
+|          ||          ****************************| |             |
+|          |*********  *  EST-COAPS  ** EST-HTTPS *| |             |
+|          |* EDHOC *  * w/DTLS sec. ** TLS sec.  *| |             |
+|**************************************************| |             |
+|* constrained object * ||           ||            | |             |
+|* security (OSCORE)  * ||           ||            | |*************|
+|********************** ||           ||************| |* call-home *|
+|          ||           ||*********  ||* circuit  *| |*  ssh/tls  *|
+|************************|* DTLS  *  ||*  proxy   *| |*  .usbkey  *|
+|* CoAP proxy,stateless *|* proxy *  ||* stateful *| |*************|
+|**************************************************| |             |
+|          ||*     IPIP proxy,stateless           *| |             |
+|          ||**************************************| |             |
+'----------''-----------''-----------''------------' '-------------'
+                  ^            ^             ^              ^
+                  |             \            |              |
+                  |              '.          .--------------'
+                  |               |          |
+                  |               |          |
+                  |               |  .--------------.
+                  |               |  . manufacturer .
+                  |               |  . authorized   .
+                  '---------------|--. signing      .
+                                     . authority    .
+                                     . (MASA)       .
+                                     '--------------'
 ]]></artwork>
 </figure></t>
 
+</section>
+<section anchor="components" title="Components">
+
+<section anchor="generic-voucher-semantics" title="generic voucher semantics">
+
+<t>The abstract semantics of the voucher, described in YANG, are in <xref target="I-D.ietf-anima-voucher"/>.</t>
+
+</section>
+<section anchor="constrained-voucher" title="constrained voucher">
+
+<t>The semantics of the constrained voucher, represented in CBOR,
+are described in <xref target="I-D.richardson-anima-ace-constrained-voucher"/>.</t>
+
+<t>This document does NOT yet have a home.</t>
+
+</section>
+<section anchor="json-format-voucher" title="JSON format voucher">
+
+<t>The semantics of the basic voucher, represented in JSON,
+are described in <xref target="I-D.ietf-anima-voucher"/>.</t>
+
+</section>
+<section anchor="cose-8152" title="COSE-8152">
+
+<t>In constrained systems the voucher is signed using the COSE mechanism
+described in <xref target="RFC8152"/>.</t>
+
+</section>
+<section anchor="standard-signature-cms" title="standard signature (CMS)">
+
+<t>In un-constrained systems the voucher is signed using the Cryptographic
+Message Syntax (CMS) described in <xref target="RFC5652"/>.</t>
+
+</section>
+<section anchor="edhoc" title="EDHOC">
+
+<t>On constrained and challenged networks, the session key management can be
+formed by <xref target="I-D.selander-ace-cose-ecdhe"/>.</t>
+
+<t>This document does NOT have a home.</t>
+
+<t>The CoAP-EST layer on top is described by <xref target="I-D.vanderstok-ace-coap-est"/></t>
+
+</section>
+<section anchor="est-coaps-2dtls-security" title="EST-COAPS 2/DTLS sec(urity)">
+
+<t>On unconstrained networks, the session key management is provided by <xref target="RFC6347"/>.
+The CoAP-EST layer on top is described by <xref target="I-D.vanderstok-ace-coap-est"/>.</t>
+
+<t>The ACE WG has agreed to adopt this document.</t>
+
+</section>
+<section anchor="est-https-tls-security" title="EST-HTTPS TLS sec(urity)">
+
+<t>On unconstrained networks with unconstrained nodes, the EST layer and
+session key management is described by <xref target="RFC7030"/> as modified by
+<xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> (BRSKI).</t>
+
+</section>
+<section anchor="constrained-object-security-oscore" title="constrained object security (OSCORE)">
+
+<t>On constained networks with constrained nodes, the CoAP transactions
+are secured by <xref target="I-D.ietf-core-object-security"/> using symmetric keys.
+The symmetric key may be pre-shared (for 6tisch minimal security), or
+MAY be derived using EDHOC.</t>
+
+</section>
+<section anchor="pledge-traffic-proxy-mechanisms" title="Pledge traffic proxy mechanisms">
+
+<t>Traffic between the Pledge and the JRC does not flow directly as the pledge
+does not typically have a globally reachable address, nor does it have any
+network access keys (whether WEP, WPA, 802.1x, or 802.15.4 keys).</t>
+
+<t>Communication between the pledge and JRC is mediated by a proxy.  This is
+primarily to protect the network against attacks.  The proxy mechanism is
+provided by as many nodes as can afford to as a benefit to the network, and
+therefore MUST be as light weight as possible.  There are therefore stateless
+mechanisms and stateful mechanisms.  The costs of the various methods is
+analysized in <xref target="I-D.richardson-anima-state-for-joinrouter"/>.</t>
+
+<section anchor="coap-proxystateless" title="COAP proxy,stateless">
+
+<t>The CoAP proxy mechanism uses the OSCORE Context Hint to statelessly store
+the address of the proxy within the CoAP structure.  It is described in <xref target="I-D.ietf-6tisch-minimal-security"/>.</t>
+
+</section>
+</section>
+<section anchor="dtls-proxy" title="DTLS proxy">
+
+<t>There has been no specific DTLS specific stateless proxy described, although
+the mechanism described by the Thread Group is being considered, if it can be
+referenced easily.</t>
+
+</section>
+<section anchor="ipip-proxystateless" title="IPIP proxy,stateless">
+
+<t>An IPIP proxy mechanism uses a layer of IP-in-IP header (protocol 98) to
+encapsulate the traffic between Join Proxy and JRC.  It has some complexities
+to implement on typical POSIX platforms.  It is intended to be described in
+<xref target="I-D.ietf-6tisch-dtsecurity-zerotouch-join"/>, in an Appendix. Another home
+for the text is also desired.</t>
+
+</section>
+<section anchor="circuit-proxy-stateful" title="circuit proxy stateful">
+
+<t>The circuit proxy method utilitizes either an application layer gateway
+(which in canonical 1990-era implementation requires a process per
+connection), or the use of NAT66.  It maintains some state for each
+connection whether TCP or UDP.</t>
+
+<t>It is this most expensive and most easily abused, but also the most widely
+available, code-wise.</t>
+
+</section>
+</section>
+<section anchor="call-home-sshtlsusbkey" title="call-home ssh/tls/usbkey">
+
+<t>The NETCONF call-home mechanism assumes that the device can get basic
+connectivity, enough for an out "outgoing" TCP connection to the
+manufacturer.</t>
+
+</section>
+<section anchor="manufacturer-authorized-signing-authority-masa" title="manufacturer authorized signing authority (MASA)">
+
+<t>The MASA is the manufacturers anchor of the manufacturer/pledge trust
+relationship that is established at the factory where the pledge is built.</t>
+
+</section>
+<section anchor="enrollment-mechanisms" title="Enrollment Mechanisms">
+
+<section anchor="netconf" title="NETCONF">
+
+<t>The NETCONF WG is describing this in <xref target="I-D.ietf-netconf-zerotouch"/> document.</t>
+
+</section>
+<section anchor="brski" title="BRSKI">
+
+<t>The ANIMA WG is describing this in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> document.</t>
+
+</section>
+<section anchor="transition-to-constrained-bootstrap" title="Transition to Constrained Bootstrap">
+
+<t>The bulk of this work has no home as yet.  It is distinguished from BRSKI in
+that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.<vspace />
+It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather
+than COSE.</t>
+
+<t>The ACE WG is going to adopt <xref target="I-D.vanderstok-ace-coap-est"/>.</t>
+
+</section>
+<section anchor="tisch-zero-touch" title="6tisch Zero Touch">
+
+<t>The 6tisch WG is describing this in <xref target="I-D.ietf-6tisch-dtsecurity-zerotouch-join"/> document.</t>
+
+</section>
+<section anchor="tisch-minimal-security" title="6tisch minimal security">
+
+<t>The 6tisch WG is describing this in <xref target="I-D.ietf-6tisch-minimal-security"/>
+document. This mechanism does enrollment in a single request/response
+message, but requires at least one "touch" to pre-share symmetric keys.</t>
+
+<t>All other methods are considered zero "touch".</t>
+
+</section>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
 
@@ -149,6 +377,15 @@ have any IANA Considerations.</t>
 &RFC8152;
 &I-D.ietf-anima-voucher;
 &I-D.ietf-anima-bootstrapping-keyinfra;
+&I-D.richardson-anima-ace-constrained-voucher;
+&RFC6347;
+&RFC7030;
+&I-D.ietf-core-object-security;
+&I-D.selander-ace-cose-ecdhe;
+&I-D.vanderstok-ace-coap-est;
+&I-D.ietf-netconf-zerotouch;
+&I-D.ietf-6tisch-minimal-security;
+&I-D.ietf-6tisch-dtsecurity-zerotouch-join;
 <reference anchor="ieee802-1AR" target="http://standards.ieee.org/findstds/standard/802.1AR-2009.html">
   <front>
     <title>IEEE 802.1AR Secure Device Identifier</title>
@@ -164,6 +401,7 @@ have any IANA Considerations.</t>
 
     <references title='Informative References'>
 
+&I-D.richardson-anima-state-for-joinrouter;
 <reference anchor="pledge" target="http://dictionary.reference.com/browse/pledge">
   <front>
     <title>Dictionary.com Unabridged</title>
@@ -195,32 +433,78 @@ have any IANA Considerations.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAA2ialoAA41VS2/jNhC+81cMNpcWreQHmt2NsCiaru3CwCYFbBftLRiT
-I4u1RAokZa0v/e0dSrJju0FbXURp3t98M0ySRAQdSspgRgctCebG2bKsyATQ
-BpbzzQJqZ4OVtvSQJIDgLKoKa4HbraNDBqo3pLOhUFYarNincpiHxGlZoFPe
-muRVKRncJOOxEHfgAxr1gqU1bBZcQ0Lo2nVHH6bj8cN4KtARZrA0gZyhINpd
-Bu+D9rKA363ba7ODX5xtarFvX7WSWUxBSAwZ15NbIaRVrJpB4xP0UmtR6wz4
-uQOJhv8SoHN4hG90DliWcCT/LVgHBfoCCnIkABiOLAr46K0LjnKfdS4U5diU
-wbPGSX6senH8FNiEwrpMQPckwxs4NdZ4SmF1huos6pF8igIq31KwjqtZM3xU
-VlzB2uahZag6UPxZiyrUZQaVdN9pCvlP/mSQShTCWFdh0AeKqa0Wn6eTycNw
-/DD+4Xyc3o+H4/37++lw/Djpj8tklkbXCRpdYXKwjWS43pBsrQ0+OKxrbkSy
-pyM3xmFU1ET0cTxNJo+rHqOAbkfcundFCHU2GnU0ifWnUTXl0ke5NsoH5c+y
-EXtI2UMSaZMWoSrf9b56nr9bzudzGHRgTbJhrAbyLxUzU+eaXG9y3a6uSb35
-eojVqykM7DiGY9YyyS6wrEtSO8quEphpGbQ16I6ptBX8ZnDrNGsN3m5rVq/q
-zCQmoJEUDUdbZ1tPoz7EWwknNyS6DnyV+uRe8Ldq5L6M03GV76YgcOQb54jt
-eczOauAjfDocQXvfkAeuHVAlhZXQakcleQ88hW2k4hvVeS6vbdtUlszCKkWZ
-NvvRX3nlpx9GNdbk/Gjy8PCQMNx/orGPRiWn2Gmt8n+vuWvXIoXB+AaLhUOz
-v5Hd2K5S4IicxD+mcWW5ritZj2NMVgiRxD25jRSXQYhNoT3wSmy6pcrL9KAV
-Q8Wjag/kDppasPnF+ozLRle106YDuyKeeKN95ZlbIGMXWOd6Mad9zEorVVJc
-p7z+nGWoYrtjBswaiDvBcBK8I/2FV9hSDMO+autJxc3lbXkgCNx2/rstqRKc
-YNdqKrnVg+9ohdzddrgBfJTYWBd91b7PHQ0yr08USP8vGDG00nlH9nCZqy9s
-Gx23BQYR+L+xpd3p6IGrY1JX1qQAkbHnILwXHG/kVoeC81Uadw6rsycOJQ7o
-dASF7Wu+gEyICSlgjSg+ws4yKsxahjHCEwccch7wyzvPSzLRTezFHTxhHeu4
-uEwZ06bvxqdc7xjJH8XyeT1fbV428z82L4vVr08vi+WX+WsSyZBqGr4GmD/P
-xKfRyZIjrE+T99kazxg6jN79LcLayLLpEOarFBXZPD8BfJ5dDMHpbRNY6xZ7
-cabY9x0k3nbyuCXdBcTSmoA8Mxc+VaREh8Xy8fnxP7JUlmMbG+L9qQ1T1Rw7
-Yt1Ejw0gRp/OBqLAQ6/+RpQu+qPcG9t2KzKGiqF/nvXjskW5F+JvccmryQMJ
-AAA=
+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
 
 -->
 
