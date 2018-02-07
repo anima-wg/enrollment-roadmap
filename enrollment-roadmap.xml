@@ -26,10 +26,10 @@
 <?rfc sortrefs="yes"?>
 <?rfc symrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-richardson-enrollment-roadmap-00" category="info">
+<rfc ipr="trust200902" docName="draft-richardson-enrollment-roadmap-01" category="info">
 
   <front>
-    <title abbrev="device enrollment">Device Enrollment in IETF protocols -- a roadmap</title>
+    <title abbrev="device enrollment">Device Enrollment in IETF protocols -- A Roadmap</title>
 
     <author initials="M." surname="Richardson" fullname="Michael Richardson">
       <organization>Sandelman Software Works</organization>
@@ -38,7 +38,7 @@
       </address>
     </author>
 
-    <date year="2018" month="January" day="26"/>
+    <date year="2018" month="February" day="07"/>
 
     <area>Internet</area>
     <workgroup>6tisch Working Group</workgroup>
@@ -142,28 +142,28 @@ trust relationship with the pledge.</t>
   security    touch     |  Bootstrap      BRSKI      | Netconf
 .----------..-----------|.-----------..------------. |-------------.
 |          ||           v|           ||            | v             |
-|          ||*********************** || ************************** |
-|          ||* constrained voucher * || *  JSON format voucher   * |
-|          ||* (CBOR)              * || *                        * |
-|          ||*********************** || ************************** |
+|          ||....................... || .......................... |
+|          ||. constrained voucher . || .  JSON format voucher   . |
+|          ||. (CBOR)              . || .                        . |
+|          ||....................... || .......................... |
 |          ||           ||           ||            | |             |
-|          |*************|  ************************************** |
-|          |* COSE-8152 *|  * standard signature (CMS - RFC5652) * |
-|          |*************|  ************************************** |
+|          |.............|  ...................................... |
+|          |. COSE-8152 .|  . standard signature (CMS - RFC5652) . |
+|          |.............|  ...................................... |
 |          ||           ||           ||            | |             |
-|          ||          ****************************| |             |
-|          |*********  *  EST-COAPS  ** EST-HTTPS *| |             |
-|          |* EDHOC *  * w/DTLS sec. ** TLS sec.  *| |             |
-|**************************************************| |             |
-|* constrained object * ||           ||            | |             |
-|* security (OSCORE)  * ||           ||            | |*************|
-|********************** ||           ||************| |* call-home *|
-|          ||           ||*********  ||* circuit  *| |*  ssh/tls  *|
-|************************|* DTLS  *  ||*  proxy   *| |*  .usbkey  *|
-|* CoAP proxy,stateless *|* proxy *  ||* stateful *| |*************|
-|**************************************************| |             |
-|          ||*     IPIP proxy,stateless           *| |             |
-|          ||**************************************| |             |
+|          ||          ............................| |             |
+|          |.........  .  EST-COAPS  .. EST-HTTPS .| |             |
+|          |. EDHOC .  . w/DTLS sec. .. TLS sec.  .| |             |
+|..................................................| |             |
+|. constrained object . ||           ||            | |             |
+|. security (OSCORE)  . ||           ||            | |.............|
+|...................... ||           ||............| |. call-home .|
+|          ||           ||.........  ||. circuit  .| |.  ssh/tls  .|
+|........................|. DTLS  .  ||.  proxy   .| |.  .usbkey  .|
+|. CoAP proxy,stateless .|. proxy .  ||. stateful .| |.............|
+|..................................................| |             |
+|          ||.     IPIP proxy,stateless           .| |             |
+|          ||......................................| |             |
 '----------''-----------''-----------''------------' '-------------'
                   ^            ^             ^              ^
                   |             \            |              |
@@ -314,25 +314,93 @@ relationship that is established at the factory where the pledge is built.</t>
 
 <t>The NETCONF WG is describing this in <xref target="I-D.ietf-netconf-zerotouch"/> document.</t>
 
+<t>The NETCONF Zerotouch mechanism provides configuration and ownership
+information by having the pledge "call home" to a location determined by
+a mix of local hints (DHCPv4, DHCPv6, and mDNS), as well as built-in
+anchors.  Additionally, ownership vouchers can be alternatively distributed
+by portable storage such as USB key.</t>
+
+<t>Upon reaching a validated call-home server, Zerotouch typically "reverses"
+the connection providing either an SSH or TLS connection <spanx style="emph">to</spanx> the pledge
+device such that it can be configured automatically.</t>
+
+<t>Zerotouch relies upon either open or very easy access to network
+connectivity, along with the ability to make an outgoing TCP connection to
+the Internet, or to the provided local configuration agent.</t>
+
+<t>Zerotouch is seen as an updated version of TR-69 by some, appropriate for
+configuration of residential appliances which are drop-shiped by ISPs or
+other service providers to homes.  That is not the only targetted use.</t>
+
 </section>
 <section anchor="brski" title="BRSKI">
 
-<t>The ANIMA WG is describing this in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> document.</t>
+<t>The ANIMA WG is describing BRSKI in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>
+document.</t>
+
+<t>The ANIMA WG does enrollment with the aim of creating a secure channel with
+a public-key infrastructure (PKI) Registrar.  The secured channel is used to
+perform Enrollment over Secure Transport (EST, RFC7030).  The real goal is
+the enrollment a new device which was probably been drop-shipped into ANIMA's
+Autonomic Control Plane.</t>
+
+<t>That is, after the pledge has been assigned a certificate within the
+(autonomic) domain, the device (no longer a pledge) will then form secure
+channels (typically using IKEv2 to key an IPsec channel).  On top of that
+channel a routing protocol (RPL) is run to form the Autonomic Control Plane
+(ACP). The ACP is then used as a management network with which to configure
+the new device.</t>
+
+<t>BRSKI is therefore step one of a number of steps, the ultimate goal of which
+is to bring the pledge into the ACP as a new device.</t>
+
+<t>BRSKI itself does not provide for any direct keying of the network
+(802.11 WEP/WPA, or 802.15.4 security).  The provision of a domain
+certificate at each node can, however, be used to do that kind of keying: for
+instance 802.15.9 provides for use of HIP and IKEv2 to key 802.15.4 networks.</t>
 
 </section>
 <section anchor="transition-to-constrained-bootstrap" title="Transition to Constrained Bootstrap">
 
+<t>This category of usage could use a better name.</t>
+
 <t>The bulk of this work has no home as yet.  It is distinguished from BRSKI in
-that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.<vspace />
+that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.
 It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather
 than COSE.</t>
 
-<t>The ACE WG is going to adopt <xref target="I-D.vanderstok-ace-coap-est"/>.</t>
+<t>The ACE WG is going to adopt <xref target="I-D.vanderstok-ace-coap-est"/>, but this is not
+a sufficient.  This work depends also depends upon a home for
+<xref target="I-D.richardson-anima-ace-constrained-voucher"/>.</t>
+
+<t>The use of this technology slice is attractive to IoT deployments where
+the devices are not battery powered (lighting for instance, AMI for electric
+meters).  In such situations, the processors in each device have
+significantly more resources, and in particular far more code space
+available.  The use of DTLS to secure application traffic (as described in
+the ACE documents) is already common, and so reuse of DTLS is desireable from
+a code point of view.</t>
+
+<t>However, the network capacity is still limited so TCP and CBOR are still
+important.  The network may also contain extremely constrained devices
+(kinetically powered light switches for instance).</t>
 
 </section>
 <section anchor="tisch-zero-touch" title="6tisch Zero Touch">
 
-<t>The 6tisch WG is describing this in <xref target="I-D.ietf-6tisch-dtsecurity-zerotouch-join"/> document.</t>
+<t>The 6tisch WG is describing this in
+<xref target="I-D.ietf-6tisch-dtsecurity-zerotouch-join"/> document.</t>
+
+<t>The 6tisch use case consists of very constrained devices with very
+constrained networks.  Code space in the devices is larger than typical class
+2, but the devices are typically battery powered and wish to sleep
+significantly.</t>
+
+<t>The use of CBOR for vouchers, COSE to sign the vouchers saves significant
+network bandwidth and code space.  Both CBOR, COSE and OSCORE are typically
+already in use for the application support.  The addition of EDHOC to provide
+asymmetric bootstrap of OSCORE completes the suite of constrained security
+protocols.</t>
 
 </section>
 <section anchor="tisch-minimal-security" title="6tisch minimal security">
@@ -341,9 +409,24 @@ than COSE.</t>
 document. This mechanism does enrollment in a single request/response
 message, but requires at least one "touch" to pre-share symmetric keys.</t>
 
+<t>The 6tisch WG felt that the number of round trips required to do EDHOC,
+and the size of the vouchers required an even simpler protocol.  As existing
+6tisch-type technology is typically deployed with network keys built-in
+at manufacturer time (no "drop-ship"), the switch from a static network
+key to a PSK for authenticaiton is considered an incremental improvement.</t>
+
 <t>All other methods are considered zero "touch".</t>
 
 </section>
+</section>
+<section anchor="discussion" title="Discussion">
+
+<t>A goal of this document is to provide some guidance in selecting which
+enrollment profile to use for a given scenario.  This section tries to
+provide some constrasting comments between the various mechanisms.</t>
+
+<t>(BUT, it does not yet do that..)</t>
+
 </section>
 <section anchor="security-considerations" title="Security Considerations">
 
@@ -411,18 +494,6 @@ have any IANA Considerations.</t>
     <date year="2015"/>
   </front>
 </reference>
-<reference anchor="duckling" target="https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf">
-  <front>
-    <title>The resurrecting duckling: security issues for ad-hoc wireless networks</title>
-    <author initials="F." surname="Stajano" fullname="Frank Stajano">
-      <organization></organization>
-    </author>
-    <author initials="R." surname="Anderson" fullname="Ross Anderson">
-      <organization></organization>
-    </author>
-    <date year="1999"/>
-  </front>
-</reference>
 
 
     </references>
@@ -433,78 +504,112 @@ have any IANA Considerations.</t>
   </back>
 
 <!-- ##markdown-source:
-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
+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
 
 -->
 

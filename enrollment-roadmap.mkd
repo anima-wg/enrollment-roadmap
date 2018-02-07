@@ -1,7 +1,7 @@
 ---
-title: Device Enrollment in IETF protocols -- a roadmap
+title: Device Enrollment in IETF protocols -- A Roadmap
 abbrev: device enrollment
-docname: draft-richardson-enrollment-roadmap-00
+docname: draft-richardson-enrollment-roadmap-01
 
 # stand_alone: true
 
@@ -59,19 +59,6 @@ informative:
       -
         name: Dictionary.com
     date: 2015
-
-  duckling:
-    title: "The resurrecting duckling: security issues for ad-hoc wireless networks"
-    target: "https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf"
-    author:
-      -
-        ins: F. Stajano
-        name: Frank Stajano
-      -
-        ins: R. Anderson
-        name: Ross Anderson
-    date: 1999
-
 
 --- abstract
 
@@ -218,7 +205,7 @@ available, code-wise.
 
 The NETCONF call-home mechanism assumes that the device can get basic
 connectivity, enough for an out "outgoing" TCP connection to the
-manufacturer. 
+manufacturer.
 
 # manufacturer authorized signing authority (MASA)
 
@@ -231,22 +218,91 @@ relationship that is established at the factory where the pledge is built.
 
 The NETCONF WG is describing this in {{I-D.ietf-netconf-zerotouch}} document.
 
+The NETCONF Zerotouch mechanism provides configuration and ownership
+information by having the pledge "call home" to a location determined by
+a mix of local hints (DHCPv4, DHCPv6, and mDNS), as well as built-in
+anchors.  Additionally, ownership vouchers can be alternatively distributed
+by portable storage such as USB key.
+
+Upon reaching a validated call-home server, Zerotouch typically "reverses"
+the connection providing either an SSH or TLS connection *to* the pledge
+device such that it can be configured automatically.
+
+Zerotouch relies upon either open or very easy access to network
+connectivity, along with the ability to make an outgoing TCP connection to
+the Internet, or to the provided local configuration agent.
+
+Zerotouch is seen as an updated version of TR-69 by some, appropriate for
+configuration of residential appliances which are drop-shiped by ISPs or
+other service providers to homes.  That is not the only targetted use.
+
 ## BRSKI
 
-The ANIMA WG is describing this in {{I-D.ietf-anima-bootstrapping-keyinfra}} document.
+The ANIMA WG is describing BRSKI in {{I-D.ietf-anima-bootstrapping-keyinfra}}
+document.
+
+The ANIMA WG does enrollment with the aim of creating a secure channel with
+a public-key infrastructure (PKI) Registrar.  The secured channel is used to
+perform Enrollment over Secure Transport (EST, RFC7030).  The real goal is
+the enrollment a new device which was probably been drop-shipped into ANIMA's
+Autonomic Control Plane.
+
+That is, after the pledge has been assigned a certificate within the
+(autonomic) domain, the device (no longer a pledge) will then form secure
+channels (typically using IKEv2 to key an IPsec channel).  On top of that
+channel a routing protocol (RPL) is run to form the Autonomic Control Plane
+(ACP). The ACP is then used as a management network with which to configure
+the new device.
+
+BRSKI is therefore step one of a number of steps, the ultimate goal of which
+is to bring the pledge into the ACP as a new device.
+
+BRSKI itself does not provide for any direct keying of the network
+(802.11 WEP/WPA, or 802.15.4 security).  The provision of a domain
+certificate at each node can, however, be used to do that kind of keying: for
+instance 802.15.9 provides for use of HIP and IKEv2 to key 802.15.4 networks.
 
 ## Transition to Constrained Bootstrap
 
+This category of usage could use a better name.
+
 The bulk of this work has no home as yet.  It is distinguished from BRSKI in
-that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.  
+that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.
 It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather
 than COSE.
 
-The ACE WG is going to adopt {{I-D.vanderstok-ace-coap-est}}.
+The ACE WG is going to adopt {{I-D.vanderstok-ace-coap-est}}, but this is not
+a sufficient.  This work depends also depends upon a home for
+{{I-D.richardson-anima-ace-constrained-voucher}}.
+
+The use of this technology slice is attractive to IoT deployments where
+the devices are not battery powered (lighting for instance, AMI for electric
+meters).  In such situations, the processors in each device have
+significantly more resources, and in particular far more code space
+available.  The use of DTLS to secure application traffic (as described in
+the ACE documents) is already common, and so reuse of DTLS is desireable from
+a code point of view.
+
+However, the network capacity is still limited so TCP and CBOR are still
+important.  The network may also contain extremely constrained devices
+(kinetically powered light switches for instance).
 
 ## 6tisch Zero Touch
 
-The 6tisch WG is describing this in {{I-D.ietf-6tisch-dtsecurity-zerotouch-join}} document.
+The 6tisch WG is describing this in
+{{I-D.ietf-6tisch-dtsecurity-zerotouch-join}} document.
+
+The 6tisch use case consists of very constrained devices with very
+constrained networks.  Code space in the devices is larger than typical class
+2, but the devices are typically battery powered and wish to sleep
+significantly.
+
+The use of CBOR for vouchers, COSE to sign the vouchers saves significant
+network bandwidth and code space.  Both CBOR, COSE and OSCORE are typically
+already in use for the application support.  The addition of EDHOC to provide
+asymmetric bootstrap of OSCORE completes the suite of constrained security
+protocols.
+
 
 ## 6tisch minimal security
 
@@ -254,7 +310,21 @@ The 6tisch WG is describing this in {{I-D.ietf-6tisch-minimal-security}}
 document. This mechanism does enrollment in a single request/response
 message, but requires at least one "touch" to pre-share symmetric keys.
 
+The 6tisch WG felt that the number of round trips required to do EDHOC,
+and the size of the vouchers required an even simpler protocol.  As existing
+6tisch-type technology is typically deployed with network keys built-in
+at manufacturer time (no "drop-ship"), the switch from a static network
+key to a PSK for authenticaiton is considered an incremental improvement.
+
 All other methods are considered zero "touch".
+
+# Discussion
+
+A goal of this document is to provide some guidance in selecting which
+enrollment profile to use for a given scenario.  This section tries to
+provide some constrasting comments between the various mechanisms.
+
+(BUT, it does not yet do that..)
 
 # Security Considerations
 
