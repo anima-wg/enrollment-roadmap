@@ -30,16 +30,16 @@ normative:
   RFC7250:
   RFC5652:
   RFC8152:
-  I-D.ietf-anima-voucher:
+  RFC8366:
   I-D.ietf-anima-bootstrapping-keyinfra:
-  I-D.richardson-anima-ace-constrained-voucher:
+  I-D.ietf-anima-constrained-voucher:
   RFC8152:
   RFC5652:
   RFC6347:
   RFC7030:
   I-D.ietf-core-object-security:
   I-D.selander-ace-cose-ecdhe:
-  I-D.vanderstok-ace-coap-est:
+  I-D.ietf-ace-coap-est:
   I-D.ietf-netconf-zerotouch:
   I-D.ietf-6tisch-minimal-security:
   I-D.ietf-6tisch-dtsecurity-zerotouch-join:
@@ -106,7 +106,7 @@ INSERT_TEXT_FROM_FILE building-block-diagram.txt END
 
 ## generic voucher semantics
 
-The abstract semantics of the voucher, described in YANG, are in {{I-D.ietf-anima-voucher}}.
+The abstract semantics of the voucher, described in YANG, are in {{RFC8366}}.
 
 ## constrained voucher
 
