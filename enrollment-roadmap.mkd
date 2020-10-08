@@ -1,13 +1,13 @@
 ---
 title: Device Enrollment in IETF protocols -- A Roadmap
 abbrev: device enrollment
-docname: draft-richardson-enrollment-roadmap-02
+docname: draft-richardson-enrollment-roadmap-03
 
-# stand_alone: true
+stand_alone: true
 
 ipr: trust200902
 area: Internet
-wg: 6tisch Working Group
+wg: ANIMA Working Group
 kw: Internet-Draft
 cat: info
 
@@ -75,9 +75,9 @@ There are numerous mechanisms being proposed to solve the problem
 of securely introducing a new devices into an existing managed network.
 
 This document provides an overview of the different mechanisms showing what
-technologies are common.  The document starts with a diagram showing the
-various components and how they go together to form five enrollment
-scenarios.
+technologies are common.
+
+The document starts with a diagram showing the various components and how they go together to form five enrollment scenarios.
 
 # Components of enrollment solutions
 
@@ -117,13 +117,14 @@ are described in {{I-D.ietf-anima-constrained-voucher}}.
 
 ## JSON format voucher
 
-The semantics of the basic voucher, represented in JSON,
-are described in {{RFC8366}}.
+The semantics of the basic voucher, represented in JSON, are described in {{RFC8366}}.
 
 ## COSE-8152
 
-In constrained systems the voucher is signed using the COSE mechanism
-described in {{RFC8152}}.
+In constrained systems the voucher is signed using the COSE mechanism described in {{RFC8152}}.
+This is to be replaced with {{?I-D.ietf-cose-rfc8152bis-algs}} (now in RFC-EDITOR Q) and
+{{?draft-ietf-cose-rfc8152bis-struct}} (in WGLC, being revised to remove countersignatures).
+
 
 ## standard signature (CMS)
 
@@ -133,24 +134,26 @@ Message Syntax (CMS) described in {{RFC5652}}.
 ## EDHOC
 
 On constrained and challenged networks, the session key management can be
-formed by {{I-D.selander-ace-cose-ecdhe}}.
+formed by {{?I-D.ietf-lake-edhoc}}.
 
-This document does NOT have a home.
+This document has a WG called LAKE.
 
 The CoAP-EST layer on top is described by {{I-D.ietf-ace-coap-est}}
 
 ## EST-COAPS 2/DTLS sec(urity)
 
 On unconstrained networks, the session key management is provided by {{RFC6347}}.
-The CoAP-EST layer on top is described by {{I-D.ietf-ace-coap-est}}.
+The CoAP-EST layer on top is described by {{I-D.ietf-ace-coap-est}}, which is in the RFC-EDITOR Q, waiting for DTLS 1.3.
 
-The ACE WG has adopted this document.
+The ACE WG adopted this document, and published it.
 
 ## EST-HTTPS TLS sec(urity)
 
 On unconstrained networks with unconstrained nodes, the EST layer and
 session key management is described by {{RFC7030}} as modified by
 {{I-D.ietf-anima-bootstrapping-keyinfra}} (BRSKI).
+
+BRSKI is in the RFC-EDITOR Q, waiting for {{?I-D.ietf-anima-autonomic-control-plane}}, which is awaiting IESG go-ahead.
 
 ## constrained object security (OSCORE)
 
@@ -159,47 +162,50 @@ are secured by {{I-D.ietf-core-object-security}} using symmetric keys.
 The symmetric key may be pre-shared (for 6tisch minimal security), or
 MAY be derived using EDHOC.
 
+## ultra-constrained enrollment
+
+The document {{?I-D.selander-ace-ake-authz}}. Version -01 expired in September 2020, but is expected to be reposted for discussion in the ACE WG.
+
 ## Pledge traffic proxy mechanisms
 
 Traffic between the Pledge and the JRC does not flow directly as the pledge
 does not typically have a globally reachable address, nor does it have any
 network access keys (whether WEP, WPA, 802.1x, or 802.15.4 keys).
 
-Communication between the pledge and JRC is mediated by a proxy.  This is
-primarily to protect the network against attacks.  The proxy mechanism is
-provided by as many nodes as can afford to as a benefit to the network, and
-therefore MUST be as light weight as possible.  There are therefore stateless
-mechanisms and stateful mechanisms.  The costs of the various methods is
-analysized in {{I-D.richardson-anima-state-for-joinrouter}}.
+Communication between the pledge and JRC is mediated by a proxy.
+This is primarily to protect the network against attacks.
+The proxy mechanism is provided by as many nodes as can afford to as a benefit to the network, and therefore MUST be as light weight as possible.
+
+There are therefore stateless mechanisms and stateful mechanisms.
+The costs of the various methods is analysized in {{I-D.richardson-anima-state-for-joinrouter}}.
 
 ### COAP proxy,stateless
 
 The CoAP proxy mechanism uses the OSCORE Context Hint to statelessly store
-the address of the proxy within the CoAP structure.  It is described in {{I-D.ietf-6tisch-minimal-security}}.
+the address of the proxy within the CoAP structure.
+It is described in {{I-D.ietf-6tisch-minimal-security}}.
 
 ## DTLS proxy
 
-There has been no specific DTLS specific stateless proxy described, although
-the mechanism described by the Thread Group is being considered, if it can be
-referenced easily.
+A DTLS specific mechanism for COAPS, is described in {{?I-D.vanderstok-anima-constrained-join-proxy}}.
 
 ## IPIP proxy,stateless
 
 An IPIP proxy mechanism uses a layer of IP-in-IP header (protocol 98) to
-encapsulate the traffic between Join Proxy and JRC.  It has some complexities
-to implement on typical POSIX platforms.  It is intended to be described in
-{{I-D.ietf-6tisch-dtsecurity-zerotouch-join}}, in an Appendix. Another home
-for the text is also desired.
+encapsulate the traffic between Join Proxy and JRC.
+It has some complexities to implement on typical POSIX platforms.
+
+At one point, it was described in {{I-D.ietf-6tisch-dtsecurity-zerotouch-join}}, in an Appendix.
+Another home for the text is desired.
 
 ## circuit proxy stateful
 
 The circuit proxy method utilitizes either an application layer gateway
 (which in canonical 1990-era implementation requires a process per
-connection), or the use of NAT66.  It maintains some state for each
-connection whether TCP or UDP.
+connection), or the use of NAT66.
+It maintains some state for each connection whether TCP or UDP.
 
-It is this most expensive and most easily abused, but also the most widely
-available, code-wise.
+It is this most expensive and most easily abused, but also the most widely available, code-wise.
 
 # call-home ssh/tls/usbkey
 
@@ -242,50 +248,58 @@ The ANIMA WG is describing BRSKI in {{I-D.ietf-anima-bootstrapping-keyinfra}}
 document.
 
 The ANIMA WG does enrollment with the aim of creating a secure channel with
-a public-key infrastructure (PKI) Registrar.  The secured channel is used to
-perform Enrollment over Secure Transport (EST, RFC7030).  The real goal is
-the enrollment a new device which was probably been drop-shipped into ANIMA's
-Autonomic Control Plane.
+a public-key infrastructure (PKI) Registrar.
+The secured channel is used to perform Enrollment over Secure Transport (EST, RFC7030).
+The real goal is the enrollment a new device which was probably been drop-shipped into ANIMA's Autonomic Control Plane.
 
-That is, after the pledge has been assigned a certificate within the
-(autonomic) domain, the device (no longer a pledge) will then form secure
-channels (typically using IKEv2 to key an IPsec channel).  On top of that
-channel a routing protocol (RPL) is run to form the Autonomic Control Plane
-(ACP). The ACP is then used as a management network with which to configure
-the new device.
+That is, after the pledge has been assigned a certificate within the (autonomic) domain, the device (no longer a pledge) will then form secure channels (typically using IKEv2 to key an IPsec channel).
+On top of that channel a routing protocol (RPL) is run to form the Autonomic Control Plane (ACP).
+The ACP is then used as a management network with which to configure the new device.
 
-BRSKI is therefore step one of a number of steps, the ultimate goal of which
-is to bring the pledge into the ACP as a new device.
+BRSKI is therefore step one of a number of steps, the ultimate goal of which is to bring the pledge into the ACP as a new device.
 
-BRSKI itself does not provide for any direct keying of the network
-(802.11 WEP/WPA, or 802.15.4 security).  The provision of a domain
-certificate at each node can, however, be used to do that kind of keying: for
+BRSKI itself does not provide for any direct keying of the network (802.11 WEP/WPA, or 802.15.4 security).
+The provision of a domain certificate at each node can, however, be used to do that kind of keying: for
 instance 802.15.9 provides for use of HIP and IKEv2 to key 802.15.4 networks.
 
 ## Transition to Constrained Bootstrap
 
-This category of usage could use a better name.
+It is distinguished from BRSKI in that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.
+It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather than COSE.
 
-The bulk of this work has no home as yet.  It is distinguished from BRSKI in
-that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.
-It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather
-than COSE.
+The ACE WG has adopted {{I-D.ietf-ace-coap-est}}, but this is not a sufficient.
 
-The ACE WG has adopted {{I-D.ietf-ace-coap-est}}, but this is not
-a sufficient.  This work depends depends upon
-{{I-D.ietf-anima-constrained-voucher}}.
+The constrained version of BRSKI is current described as part of {{I-D.ietf-anima-constrained-voucher}}.
 
-The use of this technology slice is attractive to IoT deployments where
-the devices are not battery powered (lighting for instance, AMI for electric
-meters).  In such situations, the processors in each device have
-significantly more resources, and in particular far more code space
-available.  The use of DTLS to secure application traffic (as described in
-the ACE documents) is already common, and so reuse of DTLS is desireable from
-a code point of view.
+The use of this technology slice is attractive to IoT deployments where the devices are not battery powered (lighting for instance, AMI for electric meters).
+In such situations, the processors in each device have significantly more resources, and in particular far more code space available.
+The use of DTLS to secure application traffic (as described in the ACE documents) is already common, and so reuse of DTLS is desireable from a code point of view.
 
-However, the network capacity is still limited so TCP and CBOR are still
-important.  The network may also contain extremely constrained devices
-(kinetically powered light switches for instance).
+However, the network capacity is still limited so TCP and CBOR are still important.
+The network may also contain extremely constrained devices (kinetically powered light switches for n instance).
+
+## Cloud-based Registrars
+
+BRSKI depends upon a local join proxy to direct the pledge device to the location of the Registrar.
+Not only does this require that a join proxy be widely available, but it also assumes that the owner is able to operate a Registrar.
+
+{{?I-D.ietf-anima-brski-cloud}} deals with two use cases:
+
+1. where there is a Registrar, but no join proxy.  A redirection through a manufacturer or VAR operated register points the device to a Registrar located on the Internet.
+
+2. where there is no Registrar (yet), but the network operator does have an RFC7030 EST server.  The cloud registrar provides a voucher connecting the pledge to the appropriate EST server.
+
+## BRSKY Asynchronous Enrollment
+
+BRSKI depends the join proxy being available in the location where the devices are installed, and for that proxy to also be able to communicate to the Registrar (possibly over the Internet).
+
+In a number of environments, such as new construction, a number of devices need to go through an onboarding process, but there is no connectivity available. (Possibly not even LTE/3G due to metal walls, lack of towers, etc.).
+
+The {{?I-D.ietf-anima-brski-async-enroll}} proposes two amendments to BRSKI:
+
+1. the use of CMP rather than EST for enrollment, which eliminates the need to keep a live TLS connection between pledge and Registrar.
+
+2. a discovery, store-and-forward mechanism for moving voucher requests and vouchers between the Registrar and Pledge, including a batch mechanism that aims to reduce the amount of walking that an installer might have to do.
 
 ## 6tisch Zero Touch
 
@@ -306,23 +320,21 @@ protocols.
 
 ## 6tisch minimal security
 
-The 6tisch WG is describing this in {{I-D.ietf-6tisch-minimal-security}}
-document. This mechanism does enrollment in a single request/response
-message, but requires at least one "touch" to pre-share symmetric keys.
+The 6tisch WG is describing this in {{I-D.ietf-6tisch-minimal-security}} document.
+This mechanism does enrollment in a single request/response message, but requires at least one "touch" to  pre-share symmetric keys.
 
-The 6tisch WG felt that the number of round trips required to do EDHOC,
-and the size of the vouchers required an even simpler protocol.  As existing
-6tisch-type technology is typically deployed with network keys built-in
-at manufacturer time (no "drop-ship"), the switch from a static network
-key to a PSK for authenticaiton is considered an incremental improvement.
+The 6tisch WG felt that the number of round trips required to do EDHOC, and the size of the vouchers required an even simpler protocol.
+As existing 6tisch-type technology is typically deployed with network keys built-in at manufacturer time  (no "drop-ship"), the switch from a static network key to a PSK for authenticaiton is considered an incremental improvement.
 
 All other methods are considered zero "touch".
+
+{{I-D.ietf-6tisch-minimal-security}} is in the RFC-EDITOR Q, waiting for core-stateless on which is depends to leave the WG.
 
 # Discussion
 
 A goal of this document is to provide some guidance in selecting which
-enrollment profile to use for a given scenario.  This section tries to
-provide some constrasting comments between the various mechanisms.
+enrollment profile to use for a given scenario.
+This section tries to provide some constrasting comments between the various mechanisms.
 
 (BUT, it does not yet do that..)
 
