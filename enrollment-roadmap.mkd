@@ -1,0 +1,352 @@
+---
+title: Device Enrollment in IETF protocols -- A Roadmap
+abbrev: device enrollment
+docname: draft-richardson-enrollment-roadmap-02
+
+# stand_alone: true
+
+ipr: trust200902
+area: Internet
+wg: 6tisch Working Group
+kw: Internet-Draft
+cat: info
+
+pi:    # can use array (if all yes) or hash here
+  toc: yes
+  sortrefs:   # defaults to yes
+  symrefs: yes
+
+author:
+      -
+        ins: M. Richardson
+        name: Michael Richardson
+        org: Sandelman Software Works
+        email: mcr+ietf@sandelman.ca
+
+normative:
+  RFC2119:
+  RFC7049:
+  RFC7250:
+  RFC5652:
+  RFC8152:
+  RFC8366:
+  I-D.ietf-anima-bootstrapping-keyinfra:
+  I-D.ietf-anima-constrained-voucher:
+  RFC8152:
+  RFC5652:
+  RFC6347:
+  RFC7030:
+  I-D.ietf-core-object-security:
+  I-D.selander-ace-cose-ecdhe:
+  I-D.ietf-ace-coap-est:
+  I-D.ietf-netconf-zerotouch:
+  I-D.ietf-6tisch-minimal-security:
+  I-D.ietf-6tisch-dtsecurity-zerotouch-join:
+  ieee802-1AR:
+    target: "http://standards.ieee.org/findstds/standard/802.1AR-2009.html"
+    title: "IEEE 802.1AR Secure Device Identifier"
+    author:
+      ins: "IEEE Standard"
+    date: 2009
+
+informative:
+  I-D.richardson-anima-state-for-joinrouter:
+  pledge:
+    title: "Dictionary.com Unabridged"
+    target: "http://dictionary.reference.com/browse/pledge"
+    author:
+      -
+        name: Dictionary.com
+    date: 2015
+
+--- abstract
+
+This document provides an overview of enrollment or imprinting mechanisms
+in current IETF protocols.
+
+This document is being worked on in the ANIMA-WG, and on github at:
+https://github.com/anima-wg/enrollment-roadmap
+
+--- middle
+
+# Introduction
+
+There are numerous mechanisms being proposed to solve the problem
+of securely introducing a new devices into an existing managed network.
+
+This document provides an overview of the different mechanisms showing what
+technologies are common.  The document starts with a diagram showing the
+various components and how they go together to form five enrollment
+scenarios.
+
+# Components of enrollment solutions
+
+This diagram is taken from {{I-D.ietf-anima-bootstrapping-keyinfra}}, which
+is where this work started.
+
+<figure>
+INSERT_TEXT_FROM_FILE component-diagram.txt END
+</figure>
+
+Five major components are described:
+
+1. pledge: The node that is attempting to enroll.
+2. proxy: A node that is within one layer-2 hop of the pledge that is helping.
+3. domain registrar: the Join Registrar/Coordinator (JRC) that will determine
+eligibility of the pledge.
+4. MASA: the representative of the manufacturer that has a pre-established
+trust relationship with the pledge.
+5. the domain PKI (if any)
+
+# Map of Enrollment solution
+
+<figure>
+INSERT_TEXT_FROM_FILE building-block-diagram.txt END
+</figure>
+
+# Components
+
+## generic voucher semantics
+
+The abstract semantics of the voucher, described in YANG, are in {{RFC8366}}.
+
+## constrained voucher
+
+The semantics of the constrained voucher, represented in CBOR,
+are described in {{I-D.ietf-anima-constrained-voucher}}.
+
+## JSON format voucher
+
+The semantics of the basic voucher, represented in JSON,
+are described in {{RFC8366}}.
+
+## COSE-8152
+
+In constrained systems the voucher is signed using the COSE mechanism
+described in {{RFC8152}}.
+
+## standard signature (CMS)
+
+In un-constrained systems the voucher is signed using the Cryptographic
+Message Syntax (CMS) described in {{RFC5652}}.
+
+## EDHOC
+
+On constrained and challenged networks, the session key management can be
+formed by {{I-D.selander-ace-cose-ecdhe}}.
+
+This document does NOT have a home.
+
+The CoAP-EST layer on top is described by {{I-D.ietf-ace-coap-est}}
+
+## EST-COAPS 2/DTLS sec(urity)
+
+On unconstrained networks, the session key management is provided by {{RFC6347}}.
+The CoAP-EST layer on top is described by {{I-D.ietf-ace-coap-est}}.
+
+The ACE WG has adopted this document.
+
+## EST-HTTPS TLS sec(urity)
+
+On unconstrained networks with unconstrained nodes, the EST layer and
+session key management is described by {{RFC7030}} as modified by
+{{I-D.ietf-anima-bootstrapping-keyinfra}} (BRSKI).
+
+## constrained object security (OSCORE)
+
+On constained networks with constrained nodes, the CoAP transactions
+are secured by {{I-D.ietf-core-object-security}} using symmetric keys.
+The symmetric key may be pre-shared (for 6tisch minimal security), or
+MAY be derived using EDHOC.
+
+## Pledge traffic proxy mechanisms
+
+Traffic between the Pledge and the JRC does not flow directly as the pledge
+does not typically have a globally reachable address, nor does it have any
+network access keys (whether WEP, WPA, 802.1x, or 802.15.4 keys).
+
+Communication between the pledge and JRC is mediated by a proxy.  This is
+primarily to protect the network against attacks.  The proxy mechanism is
+provided by as many nodes as can afford to as a benefit to the network, and
+therefore MUST be as light weight as possible.  There are therefore stateless
+mechanisms and stateful mechanisms.  The costs of the various methods is
+analysized in {{I-D.richardson-anima-state-for-joinrouter}}.
+
+### COAP proxy,stateless
+
+The CoAP proxy mechanism uses the OSCORE Context Hint to statelessly store
+the address of the proxy within the CoAP structure.  It is described in {{I-D.ietf-6tisch-minimal-security}}.
+
+## DTLS proxy
+
+There has been no specific DTLS specific stateless proxy described, although
+the mechanism described by the Thread Group is being considered, if it can be
+referenced easily.
+
+## IPIP proxy,stateless
+
+An IPIP proxy mechanism uses a layer of IP-in-IP header (protocol 98) to
+encapsulate the traffic between Join Proxy and JRC.  It has some complexities
+to implement on typical POSIX platforms.  It is intended to be described in
+{{I-D.ietf-6tisch-dtsecurity-zerotouch-join}}, in an Appendix. Another home
+for the text is also desired.
+
+## circuit proxy stateful
+
+The circuit proxy method utilitizes either an application layer gateway
+(which in canonical 1990-era implementation requires a process per
+connection), or the use of NAT66.  It maintains some state for each
+connection whether TCP or UDP.
+
+It is this most expensive and most easily abused, but also the most widely
+available, code-wise.
+
+# call-home ssh/tls/usbkey
+
+The NETCONF call-home mechanism assumes that the device can get basic
+connectivity, enough for an out "outgoing" TCP connection to the
+manufacturer.
+
+# manufacturer authorized signing authority (MASA)
+
+The MASA is the manufacturers anchor of the manufacturer/pledge trust
+relationship that is established at the factory where the pledge is built.
+
+# Enrollment Mechanisms
+
+## NETCONF
+
+The NETCONF WG is describing this in {{I-D.ietf-netconf-zerotouch}} document.
+
+The NETCONF Zerotouch mechanism provides configuration and ownership
+information by having the pledge "call home" to a location determined by
+a mix of local hints (DHCPv4, DHCPv6, and mDNS), as well as built-in
+anchors.  Additionally, ownership vouchers can be alternatively distributed
+by portable storage such as USB key.
+
+Upon reaching a validated call-home server, Zerotouch typically "reverses"
+the connection providing either an SSH or TLS connection *to* the pledge
+device such that it can be configured automatically.
+
+Zerotouch relies upon either open or very easy access to network
+connectivity, along with the ability to make an outgoing TCP connection to
+the Internet, or to the provided local configuration agent.
+
+Zerotouch is seen as an updated version of TR-69 by some, appropriate for
+configuration of residential appliances which are drop-shiped by ISPs or
+other service providers to homes.  That is not the only targetted use.
+
+## BRSKI
+
+The ANIMA WG is describing BRSKI in {{I-D.ietf-anima-bootstrapping-keyinfra}}
+document.
+
+The ANIMA WG does enrollment with the aim of creating a secure channel with
+a public-key infrastructure (PKI) Registrar.  The secured channel is used to
+perform Enrollment over Secure Transport (EST, RFC7030).  The real goal is
+the enrollment a new device which was probably been drop-shipped into ANIMA's
+Autonomic Control Plane.
+
+That is, after the pledge has been assigned a certificate within the
+(autonomic) domain, the device (no longer a pledge) will then form secure
+channels (typically using IKEv2 to key an IPsec channel).  On top of that
+channel a routing protocol (RPL) is run to form the Autonomic Control Plane
+(ACP). The ACP is then used as a management network with which to configure
+the new device.
+
+BRSKI is therefore step one of a number of steps, the ultimate goal of which
+is to bring the pledge into the ACP as a new device.
+
+BRSKI itself does not provide for any direct keying of the network
+(802.11 WEP/WPA, or 802.15.4 security).  The provision of a domain
+certificate at each node can, however, be used to do that kind of keying: for
+instance 802.15.9 provides for use of HIP and IKEv2 to key 802.15.4 networks.
+
+## Transition to Constrained Bootstrap
+
+This category of usage could use a better name.
+
+The bulk of this work has no home as yet.  It is distinguished from BRSKI in
+that it uses DTLS (rather than TLS) and constrained (CBOR) vouchers.
+It is distinguished from 6tisch Zero Touch in that uses CMS to sign rather
+than COSE.
+
+The ACE WG has adopted {{I-D.ietf-ace-coap-est}}, but this is not
+a sufficient.  This work depends depends upon
+{{I-D.ietf-anima-constrained-voucher}}.
+
+The use of this technology slice is attractive to IoT deployments where
+the devices are not battery powered (lighting for instance, AMI for electric
+meters).  In such situations, the processors in each device have
+significantly more resources, and in particular far more code space
+available.  The use of DTLS to secure application traffic (as described in
+the ACE documents) is already common, and so reuse of DTLS is desireable from
+a code point of view.
+
+However, the network capacity is still limited so TCP and CBOR are still
+important.  The network may also contain extremely constrained devices
+(kinetically powered light switches for instance).
+
+## 6tisch Zero Touch
+
+The 6tisch WG is describing this in
+{{I-D.ietf-6tisch-dtsecurity-zerotouch-join}} document.
+
+The 6tisch use case consists of very constrained devices with very
+constrained networks.  Code space in the devices is larger than typical class
+2, but the devices are typically battery powered and wish to sleep
+significantly.
+
+The use of CBOR for vouchers, COSE to sign the vouchers saves significant
+network bandwidth and code space.  Both CBOR, COSE and OSCORE are typically
+already in use for the application support.  The addition of EDHOC to provide
+asymmetric bootstrap of OSCORE completes the suite of constrained security
+protocols.
+
+
+## 6tisch minimal security
+
+The 6tisch WG is describing this in {{I-D.ietf-6tisch-minimal-security}}
+document. This mechanism does enrollment in a single request/response
+message, but requires at least one "touch" to pre-share symmetric keys.
+
+The 6tisch WG felt that the number of round trips required to do EDHOC,
+and the size of the vouchers required an even simpler protocol.  As existing
+6tisch-type technology is typically deployed with network keys built-in
+at manufacturer time (no "drop-ship"), the switch from a static network
+key to a PSK for authenticaiton is considered an incremental improvement.
+
+All other methods are considered zero "touch".
+
+# Discussion
+
+A goal of this document is to provide some guidance in selecting which
+enrollment profile to use for a given scenario.  This section tries to
+provide some constrasting comments between the various mechanisms.
+
+(BUT, it does not yet do that..)
+
+# OPEN ISSUE
+
+1. insufficient guidance if there is no internet connection.
+
+2. classes of devices where the manufacturer will never have an HSM/PKI. so, it will only be a self-signed key.
+
+3. how does a supply-chain manage BRSKI?
+
+# Security Considerations
+
+This document includes a tradeoff of the security attributes of the different
+protocols, and so the entire document contains security advice.
+
+# IANA Considerations
+
+This document does not define any new protocols, and therefore does not
+have any IANA Considerations.
+
+# Acknowledgements
+
+TBD
+
+--- back
+
