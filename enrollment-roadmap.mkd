@@ -28,7 +28,6 @@ normative:
   RFC7049:
   RFC7250:
   RFC5652:
-  RFC8152:
   RFC8366:
   I-D.ietf-anima-bootstrapping-keyinfra:
   I-D.ietf-anima-constrained-voucher:
@@ -90,7 +89,7 @@ INSERT_TEXT_FROM_FILE component-diagram.txt END
 
 Five major components are described:
 
-1. pledge: The node that is attempting to enroll.
+1. pledge: The node that is attempting to enroll. See {{pledge}}
 2. proxy: A node that is within one layer-2 hop of the pledge that is helping.
 3. domain registrar: the Join Registrar/Coordinator (JRC) that will determine
 eligibility of the pledge.
@@ -123,7 +122,7 @@ The semantics of the basic voucher, represented in JSON, are described in {{RFC8
 
 In constrained systems the voucher is signed using the COSE mechanism described in {{RFC8152}}.
 This is to be replaced with {{?I-D.ietf-cose-rfc8152bis-algs}} (now in RFC-EDITOR Q) and
-{{?draft-ietf-cose-rfc8152bis-struct}} (in WGLC, being revised to remove countersignatures).
+{{?I-D.ietf-cose-rfc8152bis-struct}} (in WGLC, being revised to remove countersignatures).
 
 
 ## standard signature (CMS)
@@ -168,7 +167,7 @@ The document {{?I-D.selander-ace-ake-authz}}. Version -01 expired in September 2
 
 ## Pledge traffic proxy mechanisms
 
-Traffic between the Pledge and the JRC does not flow directly as the pledge
+Traffic between the {{pledge}} and the JRC does not flow directly as the pledge
 does not typically have a globally reachable address, nor does it have any
 network access keys (whether WEP, WPA, 802.1x, or 802.15.4 keys).
 
@@ -283,7 +282,7 @@ The network may also contain extremely constrained devices (kinetically powered 
 BRSKI depends upon a local join proxy to direct the pledge device to the location of the Registrar.
 Not only does this require that a join proxy be widely available, but it also assumes that the owner is able to operate a Registrar.
 
-{{?I-D.ietf-anima-brski-cloud}} deals with two use cases:
+{{?I-D.friel-anima-brski-cloud}} deals with two use cases:
 
 1. where there is a Registrar, but no join proxy.  A redirection through a manufacturer or VAR operated register points the device to a Registrar located on the Internet.
 
